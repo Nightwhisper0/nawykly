@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nawykly — formuj nawyki</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app" v-cloak>
+    <div class="app-shell">
+
+      <!-- ============ SIDEBAR (desktop) ============ -->
+      <aside class="sidebar">
+        <div class="logo">
+          <span class="logo-mark">🌱</span>
+          <span>Nawykly</span>
+        </div>
+        <nav class="nav">
+          <button
+            v-for="view in views"
+            :key="view.id"
+            class="nav-item"
+            :class="{ active: currentView === view.id }"
+            @click="currentView = view.id"
+          >
+            <span class="nav-icon">{{ view.icon }}</span>
+            <span>{{ view.label }}</span>
+          </button>
+        </nav>
+        <div class="sidebar-footer">
+          <button class="bell-btn" :class="{ on: notificationsEnabled }" @click="toggleNotifications">
+            <span>🔔</span>
+            <span>{{ notificationsEnabled ? 'Powiadomienia: wł.' : 'Powiadomienia: wył.' }}</span>
+          </button>
+          <p class="sidebar-hint">Przypomnimy Ci o nawykach o ustawionej godzinie.</p>
+        </div>
+      </aside>
+
+      <!-- ============ MAIN ============ -->
+      <main class="main">
+        <header class="topbar">
+          <div>
+            <h1>{{ currentViewTitle }}</h1>
+            <p class="date-pill">{{ shortDate }}</p>
+          </div>
+          <div class="topbar-actions">
+            <button
+              class="icon-btn"
+              :class="{ on: notificationsEnabled }"
+              @click="toggleNotifications"
+              title="Włącz / wyłącz powiadomienia przeglądarki"
+            >🔔</button>
+          </div>
+        </header>
+
+        <!-- ============ WIDOK: DZISIAJ ============ -->
+        <section v-if="currentView === 'today'" class="view fade-in">
+          <div class="hero-card">
+            <div class="hero-text">
+              <h2>{{ greeting }} 👋</h2>
+              <p class="hero-date">{{ todayLabel }}</p>
+              <p class="hero-sub">
+                <template v-if="todayHabits.length">
+                  Wykonano <strong>{{ completedTodayCount }}</strong> z <strong>{{ todayHabits.length }}</strong> nawyków zaplanowanych na dziś.
+                </template>
+                <template v-else>
+                  Brak nawyków zaplanowanych na dziś.
+                </template>
+              </p>
+            </div>
+            <div class="ring" :style="ringStyle">
+              <div class="ring-inner">
+                <strong>{{ todayProgress }}%</strong>
+                <span>dziś</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-head">
+            <h3>Nawyki na dziś</h3>
+            <span class="section-badge">{{ todayHabits.length }}</span>
+          </div>
+
+          <div v-if="todayHabits.length" class="habit-list">
+            <div
+              v-for="h in todayHabits"
+              :key="h.id"
+              class="habit-card"
+              :class="{ done: isDoneToday(h) }"
+              :style="{ '--habit-color': h.color }"
+            >
+              <div class="habit-emoji" :style="{ background: h.color + '26' }">{{ h.emoji }}</div>
+              <div class="habit-info">
+                <div class="habit-name">{{ h.name }}</div>
+                <div class="habit-meta">
+                  <span v-if="h.reminderTime" class="chip">⏰ {{ h.reminderTime }}</span>
+                  <span class="chip flame" :title="'Seria ' + streakOf(h) + ' dni'">🔥 {{ streakOf(h) }}</span>
+                </div>
+              </div>
+              <button
+                class="done-btn"
+                :class="{ done: isDoneToday(h) }"
+                @click="toggleDone(h)"
+              >{{ isDoneToday(h) ? '✓ Zrobione' : 'Zrobione' }}</button>
+            </div>
+          </div>
+
+          <div v-else class="empty-state">
+            <div class="empty-emoji">🌤️</div>
+            <p>Nie masz nawyków na dziś.</p>
+            <button class="btn primary" @click="currentView = 'habits'; openNewHabit()">＋ Dodaj nawyk</button>
+          </div>
+
+          <div v-if="todayHabits.length && todayProgress === 100" class="all-done-banner">
+            🎉 Świetna robota! Wszystkie nawyki na dziś zrobione!
+          </div>
+        </section>
+
+        <!-- ============ WIDOK: NAWYKI ============ -->
+        <section v-if="currentView === 'habits'" class="view fade-in">
+          <div class="section-head">
+            <h3>Twoje nawyki</h3>
+            <button class="btn primary" @click="openNewHabit()">＋ Dodaj nawyk</button>
+          </div>
+
+          <div v-if="habits.length" class="manage-list">
+            <div
+              v-for="h in habits"
+              :key="h.id"
+              class="manage-card"
+              :class="{ inactive: h.archived }"
+              :style="{ '--habit-color': h.color }"
+            >
+              <div class="habit-emoji" :style="{ background: h.color + '26' }">{{ h.emoji }}</div>
+              <div class="habit-info">
+                <div class="habit-name">{{ h.name }}</div>
+                <div class="habit-meta">
+                  <span class="chip">{{ scheduleLabel(h) }}</span>
+                  <span v-if="h.reminderTime" class="chip">⏰ {{ h.reminderTime }}</span>
+                  <span class="chip flame">🔥 {{ streakOf(h) }}</span>
+                  <span class="chip">✓ {{ completionCount(h) }} razy</span>
+                </div>
+              </div>
+              <div class="manage-actions">
+                <button class="icon-btn small" title="Edytuj" @click="openEdit(h)">✏️</button>
+                <button
+                  class="icon-btn small"
+                  :class="{ armed: deleteArmed === h.id }"
+                  :title="deleteArmed === h.id ? 'Kliknij ponownie, aby usunąć' : 'Usuń'"
+                  @click="confirmDelete(h.id)"
+                >{{ deleteArmed === h.id ? '⚠️' : '🗑️' }}</button>
+              </div>
+            </div>
+          </div>
+
+          <div v-else class="empty-state">
+            <div class="empty-emoji">🌱</div>
+            <p>Nie masz jeszcze żadnych nawyków.</p>
+            <button class="btn primary" @click="openNewHabit()">＋ Dodaj pierwszy nawyk</button>
+          </div>
+        </section>
+
+        <!-- ============ WIDOK: HISTORIA ============ -->
+        <section v-if="currentView === 'history'" class="view fade-in">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <span class="stat-icon">✅</span>
+              <strong>{{ totalCompletions }}</strong>
+              <span>wykonanych nawyków</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-icon">🔥</span>
+              <strong>{{ bestStreak }}</strong>
+              <span>najlepsza seria (dni)</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-icon">🎯</span>
+              <strong>{{ habits.length }}</strong>
+              <span>aktywne nawyki</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-icon">📅</span>
+              <strong>{{ todayProgress }}%</strong>
+              <span>ukończone dziś</span>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>Ostatnie 7 dni</h3>
+            <div class="bar-chart">
+              <div v-for="(w, i) in weekStats" :key="i" class="bar-col">
+                <div class="bar-value">{{ w.count }}</div>
+                <div class="bar-track">
+                  <div class="bar-fill" :class="{ today: w.isToday }" :style="{ height: barHeight(w) }"></div>
+                </div>
+                <div class="bar-label" :class="{ today: w.isToday }">{{ w.label }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>Aktywność — ostatnie 10 tygodni</h3>
+            <p class="panel-sub">Każdy kwadrat to jeden dzień. Im jaśniejszy, tym więcej nawyków wykonano.</p>
+            <div class="heatmap">
+              <div
+                v-for="d in heatmapDays"
+                :key="d.key"
+                class="heat-cell"
+                :class="levelClass(d.count)"
+                :title="heatTitle(d)"
+              ></div>
+            </div>
+            <div class="heatmap-legend">
+              <span>mniej</span>
+              <span class="heat-cell lvl0"></span>
+              <span class="heat-cell lvl1"></span>
+              <span class="heat-cell lvl2"></span>
+              <span class="heat-cell lvl3"></span>
+              <span>więcej</span>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- ============ MODAL: DODAJ / EDYTUJ ============ -->
+    <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
+      <div class="modal fade-in">
+        <h3>{{ editingId ? '✏️ Edytuj nawyk' : '🌱 Nowy nawyk' }}</h3>
+
+        <div class="form-group">
+          <label>Nazwa nawyku</label>
+          <input
+            v-model="form.name"
+            maxlength="60"
+            placeholder="np. Poranne rozciąganie"
+            @keyup.enter="saveHabit"
+          >
+        </div>
+
+        <div class="form-group">
+          <label>Ikona</label>
+          <div class="emoji-grid">
+            <button
+              v-for="e in emojis"
+              :key="e"
+              class="emoji-cell"
+              :class="{ active: form.emoji === e }"
+              @click="form.emoji = e"
+            >{{ e }}</button>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Kolor</label>
+            <div class="color-swatches">
+              <button
+                v-for="c in colors"
+                :key="c"
+                class="swatch"
+                :class="{ active: form.color === c }"
+                :style="{ background: c }"
+                @click="form.color = c"
+              ></button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Godzina przypomnienia</label>
+            <input type="time" v-model="form.reminderTime">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Dni tygodnia</label>
+          <div class="day-chips">
+            <button
+              v-for="d in DAY_ORDER"
+              :key="d"
+              class="day-chip"
+              :class="{ active: form.days.includes(d) }"
+              @click="toggleDay(d)"
+            >{{ DAY_SHORT[d] }}</button>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn ghost" @click="closeModal">Anuluj</button>
+          <button class="btn primary" @click="saveHabit">{{ editingId ? 'Zapisz zmiany' : 'Dodaj nawyk' }}</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ TOASTY / PRZYPOMNIENIA ============ -->
+    <div class="toasts">
+      <div v-for="t in toasts" :key="t.id" class="toast fade-in">
+        <div class="toast-emoji">{{ t.habit.emoji }}</div>
+        <div class="toast-body">
+          <div class="toast-title">⏰ Czas na nawyk!</div>
+          <div class="toast-name">{{ t.habit.name }}</div>
+        </div>
+        <button class="toast-done" title="Oznacz jako zrobione" @click="completeFromToast(t)">✓</button>
+        <button class="toast-close" title="Zamknij" @click="dismissToast(t.id)">×</button>
+      </div>
+    </div>
+
+    <!-- ============ MOBILE BOTTOM NAV ============ -->
+    <nav class="bottom-nav">
+      <button
+        v-for="view in views"
+        :key="view.id"
+        class="nav-item"
+        :class="{ active: currentView === view.id }"
+        @click="currentView = view.id"
+      >
+        <span class="nav-icon">{{ view.icon }}</span>
+        <span>{{ view.label }}</span>
+      </button>
+    </nav>
+  </div>
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

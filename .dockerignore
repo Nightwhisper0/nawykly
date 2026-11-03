@@ -1,0 +1,13 @@
+# Kontekst builda nie potrzebuje plików deweloperskich ani źródła designu.
+.git
+.gitignore
+.agents
+.vscode
+.idea
+README.md
+moodboard.svg.png
+testy_acc.svg
+nawyklybrand
+**/.DS_Store
+**/*.log
+node_modules

@@ -1,0 +1,30 @@
+services:
+  nawykly:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: nawykly:local
+    container_name: nawykly
+    # Domyślnie tylko localhost — nie wystawiaj aplikacji na sieć bez potrzeby.
+    ports:
+      - "127.0.0.1:8080:8080"
+    restart: unless-stopped
+    # Hardening: rootfs read-only, zapisy tylko w /tmp (PID i temp Nginx).
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/healthz || exit 1"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

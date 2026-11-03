@@ -3,256 +3,529 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nawykly — formuj nawyki</title>
+  <meta name="description" content="Nawykly pomaga wracać do małych, codziennych kroków. Pielęgnuj rytm, obserwuj wzrost i rośnij we własnym tempie.">
+  <title>Nawykly — małe kroki, mocne korzenie</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20261102-warm1">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "./assets/vendor/three.module.js",
+        "three/addons/": "./assets/vendor/addons/"
+      }
+    }
+  </script>
 </head>
 <body>
   <div id="app" v-cloak>
-    <div class="app-shell">
 
-      <!-- ============ SIDEBAR (desktop) ============ -->
-      <aside class="sidebar">
-        <div class="logo">
-          <span class="logo-mark">🌱</span>
-          <span>Nawykly</span>
-        </div>
-        <nav class="nav">
+    <!-- ============ HEADER ============ -->
+    <header class="site-header">
+      <div class="header-inner">
+        <button class="brand" type="button" @click="currentView = 'today'" aria-label="Nawykly — strona główna">
+          <span class="brand-mark-wrap">
+            <img class="brand-mark" src="assets/brand-mark.svg" alt="" aria-hidden="true" width="44" height="44">
+          </span>
+          <span class="brand-word">nawykly<span class="brand-dot">.</span></span>
+        </button>
+
+        <nav class="main-nav" aria-label="Nawigacja główna">
           <button
             v-for="view in views"
             :key="view.id"
-            class="nav-item"
+            type="button"
+            class="nav-pill"
             :class="{ active: currentView === view.id }"
             @click="currentView = view.id"
-          >
-            <span class="nav-icon">{{ view.icon }}</span>
-            <span>{{ view.label }}</span>
-          </button>
+          >{{ view.label }}</button>
         </nav>
-        <div class="sidebar-footer">
-          <button class="bell-btn" :class="{ on: notificationsEnabled }" @click="toggleNotifications">
-            <span>🔔</span>
-            <span>{{ notificationsEnabled ? 'Powiadomienia: wł.' : 'Powiadomienia: wył.' }}</span>
+
+        <div class="header-actions">
+          <button
+            type="button"
+            class="account-btn"
+            @click="openAuth"
+            :aria-label="user ? 'Otwórz swoje konto' : 'Zaloguj się'"
+          >
+            <span v-if="user" class="account-avatar">{{ userInitials }}</span>
+            <span class="account-btn-label">{{ user ? user.name : 'Zaloguj się' }}</span>
+            <svg v-if="!user" class="account-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="12" cy="8" r="3.4" stroke="currentColor" stroke-width="1.7"/>
+              <path d="M5.5 19.2c.8-3 3.2-4.6 6.5-4.6s5.7 1.6 6.5 4.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+            </svg>
           </button>
-          <p class="sidebar-hint">Przypomnimy Ci o nawykach o ustawionej godzinie.</p>
+
+          <button
+            type="button"
+            class="bell"
+            :class="{ on: notificationsEnabled }"
+            @click="toggleNotifications"
+            :title="notificationsEnabled ? 'Wyłącz przypomnienia' : 'Włącz przypomnienia z dźwiękiem'"
+            aria-label="Przypomnienia"
+          >
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M18 8.4a6 6 0 1 0-12 0c0 4.6-2 5.9-2 5.9h16s-2-1.3-2-5.9Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M10.2 19a2 2 0 0 0 3.6 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+            </svg>
+          </button>
         </div>
-      </aside>
+      </div>
+    </header>
 
-      <!-- ============ MAIN ============ -->
-      <main class="main">
-        <header class="topbar">
-          <div>
-            <h1>{{ currentViewTitle }}</h1>
-            <p class="date-pill">{{ shortDate }}</p>
-          </div>
-          <div class="topbar-actions">
-            <button
-              class="icon-btn"
-              :class="{ on: notificationsEnabled }"
-              @click="toggleNotifications"
-              title="Włącz / wyłącz powiadomienia przeglądarki"
-            >🔔</button>
-          </div>
-        </header>
+    <!-- ============ MAIN ============ -->
+    <main class="main">
 
-        <!-- ============ WIDOK: DZISIAJ ============ -->
-        <section v-if="currentView === 'today'" class="view fade-in">
-          <div class="hero-card">
-            <div class="hero-text">
-              <h2>{{ greeting }} 👋</h2>
-              <p class="hero-date">{{ todayLabel }}</p>
-              <p class="hero-sub">
-                <template v-if="todayHabits.length">
-                  Wykonano <strong>{{ completedTodayCount }}</strong> z <strong>{{ todayHabits.length }}</strong> nawyków zaplanowanych na dziś.
-                </template>
-                <template v-else>
-                  Brak nawyków zaplanowanych na dziś.
-                </template>
-              </p>
+      <div v-if="notificationsSupported && !notificationsEnabled" class="notify-banner">
+        <div class="notify-banner-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M18 8.4a6 6 0 1 0-12 0c0 4.6-2 5.9-2 5.9h16s-2-1.3-2-5.9Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M10.2 19a2 2 0 0 0 3.6 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="notify-banner-copy">
+          <strong>Nie musisz pamiętać o wszystkim</strong>
+          <span>Włącz przypomnienia, a damy Ci znać o wybranej porze. Jedna zgoda — resztą zajmiemy się my.</span>
+        </div>
+        <button class="btn btn-primary" type="button" @click="toggleNotifications">Włącz przypomnienia</button>
+      </div>
+
+      <!-- ============ WIDOK: DZISIAJ ============ -->
+      <section v-show="currentView === 'today'" class="view fade-in">
+        <div class="view-head">
+          <span class="tag">01 — Dzisiaj</span>
+          <span class="view-date">{{ shortDate }}</span>
+        </div>
+
+        <div class="hero hero-3d">
+          <div class="hero-copy">
+            <div class="hero-kicker-row">
+              <span class="hero-badge">Twój rytm</span>
+              <span class="hero-kicker">Bonsai / 3D</span>
             </div>
-            <div class="ring" :style="ringStyle">
-              <div class="ring-inner">
-                <strong>{{ todayProgress }}%</strong>
-                <span>dziś</span>
+            <h1>{{ greeting }}.<br><em>Małe kroki.<br>Mocne korzenie.</em></h1>
+            <p class="hero-sub">Pielęgnuj swój rytm dzień po dniu. Bonsai rośnie powoli — Ty też możesz. Zatrzymaj się, obróć model i przypomnij sobie, po co to robisz.</p>
+            <div class="hero-actions">
+              <button class="btn btn-light" type="button" @click="currentView = 'habits'; openNewHabit()">Zaplanuj nowy krok</button>
+              <span class="hero-today">{{ completedTodayCount }} z {{ todayHabits.length }} gotowe dziś</span>
+            </div>
+          </div>
+
+          <div class="hero-stage-wrap">
+            <div
+              class="bonsai-stage"
+              id="bonsai-stage"
+              tabindex="0"
+              role="region"
+              aria-label="Interaktywny model bonsai 3D. Przeciągnij, aby obrócić. Użyj kółka myszy lub gestu szczypania, aby przybliżyć. Strzałki obracają model, a spacja zatrzymuje lub wznawia obrót."
+            >
+              <div class="bonsai-canvas-host" id="bonsai-canvas-host" aria-hidden="true"></div>
+              <img class="bonsai-watermark" src="assets/brand-mark.svg" alt="" aria-hidden="true">
+              <span class="bonsai-stage-tag">Bonsai · 3D</span>
+
+              <div class="bonsai-loading" id="bonsai-loading" aria-live="polite">
+                <img class="bonsai-loading-mark" src="assets/brand-mark.svg" alt="" aria-hidden="true">
+                <span class="bonsai-loading-text" id="bonsai-progress">Układamy bonsai…</span>
+                <div class="bonsai-progress-track" aria-hidden="true">
+                  <span id="bonsai-progress-bar"></span>
+                </div>
+              </div>
+
+              <div class="bonsai-fallback" id="bonsai-fallback" hidden>
+                <img src="assets/brand-mark.svg" alt="" aria-hidden="true">
+                <strong>Bonsai odpoczywa.</strong>
+                <p>Model 3D potrzebuje WebGL. Możesz dalej korzystać z aplikacji.</p>
+                <button type="button" class="bonsai-retry" onclick="window.location.reload()">Spróbuj ponownie</button>
+              </div>
+
+              <div class="bonsai-ui">
+                <span class="bonsai-hint">Przeciągnij, aby obrócić · scroll, aby przybliżyć</span>
+                <div class="bonsai-actions">
+                  <button type="button" id="bonsai-toggle" disabled>Zatrzymaj obrót</button>
+                  <button type="button" id="bonsai-reset" disabled>Reset</button>
+                </div>
+              </div>
+
+              <div class="hero-progress">
+                <div class="ring" :style="ringStyle">
+                  <div class="ring-inner">
+                    <strong>{{ todayProgress }}%</strong>
+                    <span>dziś</span>
+                  </div>
+                </div>
+                <p class="hero-progress-caption">Twój dzień</p>
               </div>
             </div>
           </div>
+        </div>
 
-          <div class="section-head">
-            <h3>Nawyki na dziś</h3>
-            <span class="section-badge">{{ todayHabits.length }}</span>
+        <div class="section-head">
+          <h2>Na dziś</h2>
+          <span class="count-pill">{{ todayHabits.length }} w planie</span>
+        </div>
+
+        <div v-if="todayHabits.length" class="habit-list">
+          <article
+            v-for="h in todayHabits"
+            :key="h.id"
+            class="habit-card"
+            :class="{ done: isDoneToday(h) }"
+            :style="{ '--habit-color': h.color }"
+          >
+            <div class="habit-glyph" :style="{ background: h.color, color: textOn(h.color) }">{{ initialOf(h.name) }}</div>
+            <div class="habit-main">
+              <h3 class="habit-name">{{ h.name }}</h3>
+              <div class="habit-meta">
+                <span v-if="h.reminderTime" class="chip">o {{ h.reminderTime }}</span>
+                <span v-if="streakOf(h) > 0" class="chip chip-streak">seria {{ streakLabel(streakOf(h)) }}</span>
+                <span v-else class="chip">nowy start</span>
+              </div>
+            </div>
+            <button type="button" class="done-btn" @click="toggleDone(h)">
+              {{ isDoneToday(h) ? 'Zrobione' : 'Odhacz' }}
+            </button>
+          </article>
+        </div>
+
+        <div v-else class="empty-state">
+          <div class="empty-mark" aria-hidden="true">—</div>
+          <p>Dziś nie masz zaplanowanych nawyków. To dobry moment, żeby dodać coś małego.</p>
+          <button class="btn btn-dark" type="button" @click="currentView = 'habits'; openNewHabit()">Zaplanuj nawyk</button>
+        </div>
+
+        <div
+          v-if="isTodayComplete"
+          class="all-done-banner"
+          role="status"
+          aria-live="polite"
+        >
+          <span class="done-check" aria-hidden="true">✓</span>
+          <div class="all-done-copy">
+            <strong>Gratulacje, każdego dnia o krok bliżej</strong>
+            <span>Wszystko na dziś odhaczone. Zostaw sobie chwilę na docenienie tego.</span>
+          </div>
+        </div>
+
+        <blockquote class="manifest">
+          <span class="tag tag-light">Na koniec</span>
+          <p>„Nie chodzi o perfekcyjny dzień.<br>Chodzi o to, żeby <em>wrócić</em>.”</p>
+          <span class="manifest-credit">Nawykly / małe kroki, które zostają</span>
+        </blockquote>
+      </section>
+
+      <!-- ============ WIDOK: NAWYKI ============ -->
+      <section v-if="currentView === 'habits'" class="view fade-in">
+        <div class="view-head">
+          <span class="tag">02 — Nawyki</span>
+          <button class="btn btn-primary" type="button" @click="openNewHabit()">Dodaj nawyk</button>
+        </div>
+
+        <div class="title-block">
+          <h1 class="page-title">Twoje nawyki<span class="dot">.</span></h1>
+          <p class="page-lede">Ustal rytm, godziny przypomnień i dni tygodnia. Regularność jest ważniejsza niż intensywność.</p>
+        </div>
+
+        <div v-if="habits.length" class="manage-list">
+          <article
+            v-for="h in habits"
+            :key="h.id"
+            class="manage-card"
+            :class="{ inactive: h.archived }"
+            :style="{ '--habit-color': h.color }"
+          >
+            <div class="habit-glyph" :style="{ background: h.color, color: textOn(h.color) }">{{ initialOf(h.name) }}</div>
+            <div class="habit-main">
+              <h3 class="habit-name">{{ h.name }}</h3>
+              <div class="habit-meta">
+                <span class="chip">{{ scheduleLabel(h) }}</span>
+                <span v-if="h.reminderTime" class="chip">o {{ h.reminderTime }}</span>
+                <span v-if="streakOf(h) > 0" class="chip chip-streak">seria {{ streakLabel(streakOf(h)) }}</span>
+                <span class="chip">{{ timesLabel(completionCount(h)) }}</span>
+              </div>
+            </div>
+            <div class="manage-actions">
+              <button type="button" class="action-btn" title="Edytuj nawyk" @click="openEdit(h)">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M4 20h4.2L19 9.2 14.8 5 4 15.8V20Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+                  <path d="M13.2 6.6l4.2 4.2" stroke="currentColor" stroke-width="1.7"/>
+                </svg>
+              </button>
+              <button
+                type="button"
+                class="action-btn"
+                :class="{ armed: deleteArmed === h.id }"
+                :title="deleteArmed === h.id ? 'Kliknij ponownie, aby usunąć' : 'Usuń nawyk'"
+                @click="confirmDelete(h.id)"
+              >
+                <template v-if="deleteArmed === h.id">Usuń?</template>
+                <svg v-else viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M4.5 7h15M9.5 7V4.8h5V7M7 7l1 12.2h8L17 7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M10.2 10.5v5.5M13.8 10.5v5.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+                </svg>
+              </button>
+            </div>
+          </article>
+        </div>
+
+        <div v-else class="empty-state">
+          <div class="empty-mark" aria-hidden="true">—</div>
+          <p>Zacznij od jednej rzeczy. Reszta przyjdzie z czasem.</p>
+          <button class="btn btn-dark" type="button" @click="openNewHabit()">Dodaj pierwszy nawyk</button>
+        </div>
+      </section>
+
+      <!-- ============ WIDOK: POSTĘPY ============ -->
+      <section v-if="currentView === 'progress'" class="view fade-in">
+        <div class="view-head">
+          <span class="tag">03 — Postępy</span>
+          <span class="view-date">Ostatnie 10 tygodni</span>
+        </div>
+
+        <div class="title-block">
+          <h1 class="page-title">Twoje postępy<span class="dot">.</span></h1>
+          <p class="page-lede">Zobacz, jak wygląda Twoja regularność. Bez oceniania — tylko informacja, co działa i co warto wzmocnić.</p>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card stat-blue">
+            <span class="stat-label">Odhaczone nawyki</span>
+            <strong>{{ totalCompletions }}</strong>
+            <span class="stat-foot">od pierwszego dnia</span>
+          </div>
+          <div class="stat-card stat-orange">
+            <span class="stat-label">Najdłuższa seria</span>
+            <strong>{{ bestStreak }}</strong>
+            <span class="stat-foot">dni z rzędu</span>
+          </div>
+          <div class="stat-card stat-lavender">
+            <span class="stat-label">W planie</span>
+            <strong>{{ habits.length }}</strong>
+            <span class="stat-foot">aktywnych nawyków</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Dziś gotowe</span>
+            <strong>{{ todayProgress }}%</strong>
+            <span class="stat-foot">Twojego planu</span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h3>Ostatnie 7 dni</h3>
+              <p class="panel-sub">Ile nawyków udało się odhaczyć każdego dnia.</p>
+            </div>
+          </div>
+          <div class="bar-chart">
+            <div v-for="(w, i) in weekStats" :key="i" class="bar-col">
+              <div class="bar-value">{{ w.count }}</div>
+              <div class="bar-track">
+                <div class="bar-fill" :class="{ today: w.isToday }" :style="{ height: barHeight(w) }"></div>
+              </div>
+              <div class="bar-label" :class="{ today: w.isToday }">{{ w.label }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h3>Mapa regularności</h3>
+              <p class="panel-sub">Każdy kwadrat to jeden dzień. Kolor pokazuje, jak często udawało się wrócić do planu.</p>
+            </div>
+          </div>
+          <div class="heatmap">
+            <div
+              v-for="d in heatmapDays"
+              :key="d.key"
+              class="heat-cell"
+              :class="levelClass(d.count)"
+              :title="heatTitle(d)"
+            ></div>
+          </div>
+          <div class="heatmap-legend">
+            <span>mniej</span>
+            <span class="heat-cell lvl0"></span>
+            <span class="heat-cell lvl1"></span>
+            <span class="heat-cell lvl2"></span>
+            <span class="heat-cell lvl3"></span>
+            <span>więcej</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ WIDOK: ZNAJOMI ============ -->
+      <section v-if="currentView === 'friends'" class="view fade-in">
+        <div class="view-head">
+          <span class="tag">04 — Znajomi</span>
+          <span class="view-date">{{ friends.length }} osób w kręgu</span>
+        </div>
+
+        <div class="title-block">
+          <h1 class="page-title">Ludzie, którzy idą z Tobą<span class="dot">.</span></h1>
+          <p class="page-lede">Porównujcie regularność, a nie perfekcję. Czasem wystarczy, że ktoś pyta: „jak dziś?” — i od razu łatwiej wrócić do planu.</p>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card stat-blue">
+            <span class="stat-label">Twoje miejsce</span>
+            <strong>#{{ myRank }}</strong>
+            <span class="stat-foot">wśród {{ friends.length + 1 }} osób</span>
+          </div>
+          <div class="stat-card stat-orange">
+            <span class="stat-label">Twoja regularność</span>
+            <strong>{{ myWeeklyProgress }}%</strong>
+            <span class="stat-foot">ostatnie 7 dni</span>
+          </div>
+          <div class="stat-card stat-lavender">
+            <span class="stat-label">Twoja seria</span>
+            <strong>{{ bestStreak }}</strong>
+            <span class="stat-foot">dni z rzędu</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">W kręgu</span>
+            <strong>{{ friends.length }}</strong>
+            <span class="stat-foot">osób obok Ciebie</span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h3>Wasza regularność</h3>
+              <p class="panel-sub">Tydzień po tygodniu. Bez tabeli wyników, która odbiera radość.</p>
+            </div>
           </div>
 
-          <div v-if="todayHabits.length" class="habit-list">
+          <div class="friend-board">
             <div
-              v-for="h in todayHabits"
-              :key="h.id"
-              class="habit-card"
-              :class="{ done: isDoneToday(h) }"
-              :style="{ '--habit-color': h.color }"
+              v-for="friend in friendBoard"
+              :key="friend.id"
+              class="friend-row"
+              :class="{ me: friend.isMe }"
             >
-              <div class="habit-emoji" :style="{ background: h.color + '26' }">{{ h.emoji }}</div>
-              <div class="habit-info">
-                <div class="habit-name">{{ h.name }}</div>
-                <div class="habit-meta">
-                  <span v-if="h.reminderTime" class="chip">⏰ {{ h.reminderTime }}</span>
-                  <span class="chip flame" :title="'Seria ' + streakOf(h) + ' dni'">🔥 {{ streakOf(h) }}</span>
+              <span class="friend-rank">{{ friend.rank }}</span>
+              <div class="friend-avatar" :style="{ background: friend.color, color: textOn(friend.color) }">
+                {{ friendInitials(friend.name) }}
+              </div>
+              <div class="friend-copy">
+                <div class="friend-name-line">
+                  <strong>{{ friend.name }}</strong>
+                  <span v-if="friend.isMe" class="friend-you">Ty</span>
                 </div>
+                <span class="friend-handle">{{ friend.handle }}</span>
+              </div>
+              <div class="friend-progress">
+                <div class="friend-progress-meta">
+                  <span>regularność</span>
+                  <strong>{{ friend.weeklyProgress }}%</strong>
+                </div>
+                <div class="friend-track">
+                  <span :style="{ width: friend.weeklyProgress + '%' }"></span>
+                </div>
+              </div>
+              <div class="friend-streak">
+                <span>seria</span>
+                <strong>{{ streakLabel(friend.streak) }}</strong>
               </div>
               <button
-                class="done-btn"
-                :class="{ done: isDoneToday(h) }"
-                @click="toggleDone(h)"
-              >{{ isDoneToday(h) ? '✓ Zrobione' : 'Zrobione' }}</button>
+                v-if="!friend.isMe"
+                type="button"
+                class="friend-challenge"
+                :class="{ sent: friend.challenged }"
+                @click="challengeFriend(friend)"
+              >{{ friend.challenged ? 'Wysłane' : 'Wyzwij' }}</button>
+              <span v-else class="friend-self">To Ty</span>
             </div>
           </div>
 
-          <div v-else class="empty-state">
-            <div class="empty-emoji">🌤️</div>
-            <p>Nie masz nawyków na dziś.</p>
-            <button class="btn primary" @click="currentView = 'habits'; openNewHabit()">＋ Dodaj nawyk</button>
-          </div>
+          <p v-if="challengeNotice" class="form-notice" role="status">{{ challengeNotice }}</p>
+        </div>
 
-          <div v-if="todayHabits.length && todayProgress === 100" class="all-done-banner">
-            🎉 Świetna robota! Wszystkie nawyki na dziś zrobione!
-          </div>
-        </section>
-
-        <!-- ============ WIDOK: NAWYKI ============ -->
-        <section v-if="currentView === 'habits'" class="view fade-in">
-          <div class="section-head">
-            <h3>Twoje nawyki</h3>
-            <button class="btn primary" @click="openNewHabit()">＋ Dodaj nawyk</button>
-          </div>
-
-          <div v-if="habits.length" class="manage-list">
-            <div
-              v-for="h in habits"
-              :key="h.id"
-              class="manage-card"
-              :class="{ inactive: h.archived }"
-              :style="{ '--habit-color': h.color }"
-            >
-              <div class="habit-emoji" :style="{ background: h.color + '26' }">{{ h.emoji }}</div>
-              <div class="habit-info">
-                <div class="habit-name">{{ h.name }}</div>
-                <div class="habit-meta">
-                  <span class="chip">{{ scheduleLabel(h) }}</span>
-                  <span v-if="h.reminderTime" class="chip">⏰ {{ h.reminderTime }}</span>
-                  <span class="chip flame">🔥 {{ streakOf(h) }}</span>
-                  <span class="chip">✓ {{ completionCount(h) }} razy</span>
-                </div>
-              </div>
-              <div class="manage-actions">
-                <button class="icon-btn small" title="Edytuj" @click="openEdit(h)">✏️</button>
-                <button
-                  class="icon-btn small"
-                  :class="{ armed: deleteArmed === h.id }"
-                  :title="deleteArmed === h.id ? 'Kliknij ponownie, aby usunąć' : 'Usuń'"
-                  @click="confirmDelete(h.id)"
-                >{{ deleteArmed === h.id ? '⚠️' : '🗑️' }}</button>
+        <div class="friends-grid">
+          <div class="panel friends-invite">
+            <div class="panel-head">
+              <div>
+                <h3>Zaproś do kręgu</h3>
+                <p class="panel-sub">Dodaj osobę, z którą chcesz porównywać postępy.</p>
               </div>
             </div>
-          </div>
-
-          <div v-else class="empty-state">
-            <div class="empty-emoji">🌱</div>
-            <p>Nie masz jeszcze żadnych nawyków.</p>
-            <button class="btn primary" @click="openNewHabit()">＋ Dodaj pierwszy nawyk</button>
-          </div>
-        </section>
-
-        <!-- ============ WIDOK: HISTORIA ============ -->
-        <section v-if="currentView === 'history'" class="view fade-in">
-          <div class="stats-grid">
-            <div class="stat-card">
-              <span class="stat-icon">✅</span>
-              <strong>{{ totalCompletions }}</strong>
-              <span>wykonanych nawyków</span>
-            </div>
-            <div class="stat-card">
-              <span class="stat-icon">🔥</span>
-              <strong>{{ bestStreak }}</strong>
-              <span>najlepsza seria (dni)</span>
-            </div>
-            <div class="stat-card">
-              <span class="stat-icon">🎯</span>
-              <strong>{{ habits.length }}</strong>
-              <span>aktywne nawyki</span>
-            </div>
-            <div class="stat-card">
-              <span class="stat-icon">📅</span>
-              <strong>{{ todayProgress }}%</strong>
-              <span>ukończone dziś</span>
-            </div>
-          </div>
-
-          <div class="panel">
-            <h3>Ostatnie 7 dni</h3>
-            <div class="bar-chart">
-              <div v-for="(w, i) in weekStats" :key="i" class="bar-col">
-                <div class="bar-value">{{ w.count }}</div>
-                <div class="bar-track">
-                  <div class="bar-fill" :class="{ today: w.isToday }" :style="{ height: barHeight(w) }"></div>
-                </div>
-                <div class="bar-label" :class="{ today: w.isToday }">{{ w.label }}</div>
+            <div class="friend-form">
+              <div class="form-group">
+                <label for="friend-name">Imię lub pseudonim</label>
+                <input id="friend-name" v-model="newFriendName" maxlength="40" placeholder="np. Marta" @keyup.enter="addFriend">
               </div>
+              <div class="form-group">
+                <label for="friend-handle">Nazwa (opcjonalnie)</label>
+                <input id="friend-handle" v-model="newFriendHandle" maxlength="30" placeholder="@marta" @keyup.enter="addFriend">
+              </div>
+              <button class="btn btn-primary" type="button" @click="addFriend">Dodaj do kręgu</button>
             </div>
+            <p class="form-hint">Na razie lista zostaje na tym urządzeniu — bez wysyłania zaproszeń.</p>
+            <p v-if="friendNotice" class="form-notice" role="status">{{ friendNotice }}</p>
           </div>
 
-          <div class="panel">
-            <h3>Aktywność — ostatnie 10 tygodni</h3>
-            <p class="panel-sub">Każdy kwadrat to jeden dzień. Im jaśniejszy, tym więcej nawyków wykonano.</p>
-            <div class="heatmap">
-              <div
-                v-for="d in heatmapDays"
-                :key="d.key"
-                class="heat-cell"
-                :class="levelClass(d.count)"
-                :title="heatTitle(d)"
-              ></div>
-            </div>
-            <div class="heatmap-legend">
-              <span>mniej</span>
-              <span class="heat-cell lvl0"></span>
-              <span class="heat-cell lvl1"></span>
-              <span class="heat-cell lvl2"></span>
-              <span class="heat-cell lvl3"></span>
-              <span>więcej</span>
-            </div>
+          <div class="panel friends-tip">
+            <span class="tag">Dobra praktyka</span>
+            <h3>Rywalizujcie lekko.</h3>
+            <p>Porównujcie regularność, nie perfekcję. Jednego dnia możesz być wyżej, innego niżej. Liczy się to, że wracacie.</p>
+            <p class="friends-tip-note">Dobra rozmowa zaczyna się od „jak dziś?” — nie od „dlaczego nie więcej?”.</p>
           </div>
-        </section>
-      </main>
+        </div>
+      </section>
+    </main>
+
+    <!-- ============ FOOTER ============ -->
+    <footer class="site-footer">
+      <div class="palette-strip" aria-hidden="true">
+        <span style="background:#AD5228"></span>
+        <span style="background:#7A4A2E"></span>
+        <span style="background:#C97A4A"></span>
+        <span style="background:#D8C7A5"></span>
+        <span style="background:#E7DEC2"></span>
+        <span style="background:#211D17"></span>
+      </div>
+      <div class="footer-inner">
+        <span class="footer-brand"><img src="assets/brand-mark.svg" alt="" aria-hidden="true">nawykly.</span>
+        <span class="footer-note">Projekt prototypowy · dane zostają na Twoim urządzeniu</span>
+        <span class="footer-note">© 2026</span>
+      </div>
+    </footer>
+
+    <!-- ============ PRZYCIEMNIENIE + KONFETTI ============ -->
+    <div
+      class="celebration-dim"
+      :class="{ active: confettiPieces.length > 0 }"
+      aria-hidden="true"
+    ></div>
+    <div v-if="confettiPieces.length" class="confetti-layer" aria-hidden="true">
+      <span
+        v-for="piece in confettiPieces"
+        :key="piece.id"
+        class="confetti-piece"
+        :style="piece.style"
+      ></span>
     </div>
 
-    <!-- ============ MODAL: DODAJ / EDYTUJ ============ -->
+    <!-- ============ MODAL: DODAJ / EDYTUJ NAWYK ============ -->
     <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
-      <div class="modal fade-in">
-        <h3>{{ editingId ? '✏️ Edytuj nawyk' : '🌱 Nowy nawyk' }}</h3>
-
-        <div class="form-group">
-          <label>Nazwa nawyku</label>
-          <input
-            v-model="form.name"
-            maxlength="60"
-            placeholder="np. Poranne rozciąganie"
-            @keyup.enter="saveHabit"
-          >
+      <div class="modal">
+        <div class="modal-head">
+          <span class="tag">{{ editingId ? 'Edycja' : 'Nowy rytm' }}</span>
+          <h3>{{ editingId ? 'Dopasuj nawyk.' : 'Zacznij od małej rzeczy.' }}</h3>
+          <p class="modal-lede">Nadaj nazwę, wybierz kolor i dni. Resztę zrobisz po swojemu.</p>
         </div>
 
         <div class="form-group">
-          <label>Ikona</label>
-          <div class="emoji-grid">
-            <button
-              v-for="e in emojis"
-              :key="e"
-              class="emoji-cell"
-              :class="{ active: form.emoji === e }"
-              @click="form.emoji = e"
-            >{{ e }}</button>
-          </div>
+          <label for="habit-name">Co chcesz robić regularnie?</label>
+          <input
+            id="habit-name"
+            v-model="form.name"
+            maxlength="60"
+            placeholder="np. 10 minut czytania"
+            @keyup.enter="saveHabit"
+          >
         </div>
 
         <div class="form-row">
@@ -262,68 +535,151 @@
               <button
                 v-for="c in colors"
                 :key="c"
+                type="button"
                 class="swatch"
                 :class="{ active: form.color === c }"
                 :style="{ background: c }"
+                :aria-label="'Wybierz kolor ' + c"
                 @click="form.color = c"
               ></button>
             </div>
           </div>
           <div class="form-group">
-            <label>Godzina przypomnienia</label>
-            <input type="time" v-model="form.reminderTime">
+            <label for="habit-time">O której przypominać?</label>
+            <input id="habit-time" type="time" v-model="form.reminderTime">
           </div>
         </div>
 
         <div class="form-group">
-          <label>Dni tygodnia</label>
+          <label>Kiedy?</label>
           <div class="day-chips">
             <button
               v-for="d in DAY_ORDER"
               :key="d"
+              type="button"
               class="day-chip"
               :class="{ active: form.days.includes(d) }"
               @click="toggleDay(d)"
             >{{ DAY_SHORT[d] }}</button>
           </div>
+          <p class="form-hint">Bez wyboru oznacza codziennie. Możesz to zmienić w każdej chwili.</p>
         </div>
 
+        <p v-if="formError" class="form-error" role="alert">{{ formError }}</p>
+
         <div class="modal-actions">
-          <button class="btn ghost" @click="closeModal">Anuluj</button>
-          <button class="btn primary" @click="saveHabit">{{ editingId ? 'Zapisz zmiany' : 'Dodaj nawyk' }}</button>
+          <button class="btn btn-ghost" type="button" @click="closeModal">Anuluj</button>
+          <button class="btn btn-primary" type="button" @click="saveHabit">{{ editingId ? 'Zapisz zmiany' : 'Dodaj nawyk' }}</button>
         </div>
+      </div>
+    </div>
+
+    <!-- ============ MODAL: KONTO ============ -->
+    <div v-if="showAuthModal" class="modal-overlay" @click.self="closeAuth">
+      <div class="modal auth-modal">
+        <div class="modal-head">
+          <span class="tag">Twoje konto</span>
+          <h3>{{ user ? 'Cześć, ' + user.name + '.' : (authMode === 'login' ? 'Wróć do swojego rytmu.' : 'Zacznij od jednego kroku.') }}</h3>
+          <p class="modal-lede">{{ user ? 'Twoje dane i postępy zostają na tym urządzeniu.' : 'Konto pomaga dopasować widok znajomych. Bez chmury i bez zobowiązań.' }}</p>
+        </div>
+
+        <template v-if="user">
+          <div class="account-summary">
+            <div class="account-avatar large">{{ userInitials }}</div>
+            <div class="account-summary-copy">
+              <strong>{{ user.name }}</strong>
+              <span>{{ user.email }}</span>
+            </div>
+          </div>
+          <p class="form-hint">Na razie konto jest lokalne. Dane nie opuszczają tej przeglądarki.</p>
+          <div class="modal-actions">
+            <button class="btn btn-ghost" type="button" @click="closeAuth">Zamknij</button>
+            <button class="btn btn-primary" type="button" @click="logout">Wyloguj się</button>
+          </div>
+        </template>
+
+        <template v-else>
+          <div class="auth-switch" role="tablist" aria-label="Logowanie lub nowe konto">
+            <button
+              type="button"
+              :class="{ active: authMode === 'login' }"
+              @click="authMode = 'login'; authError = ''"
+            >Zaloguj się</button>
+            <button
+              type="button"
+              :class="{ active: authMode === 'register' }"
+              @click="authMode = 'register'; authError = ''"
+            >Nowe konto</button>
+          </div>
+
+          <div class="form-group">
+            <label for="auth-name">Jak masz na imię?</label>
+            <input id="auth-name" v-model="authForm.name" maxlength="40" placeholder="np. Aleks">
+          </div>
+          <div class="form-group">
+            <label for="auth-email">E-mail</label>
+            <input id="auth-email" type="email" v-model="authForm.email" maxlength="80" placeholder="ty@przyklad.pl">
+          </div>
+          <div class="form-group">
+            <label for="auth-password">Hasło</label>
+            <input id="auth-password" type="password" v-model="authForm.password" maxlength="80" placeholder="Minimum 4 znaki" @keyup.enter="login">
+          </div>
+
+          <p v-if="authError" class="form-error" role="alert">{{ authError }}</p>
+          <p class="form-hint">To prototyp: konto zostaje w tej przeglądarce. Nie wysyłamy e-maili ani nie przechowujemy haseł w chmurze.</p>
+
+          <div class="modal-actions">
+            <button class="btn btn-ghost" type="button" @click="closeAuth">Nie teraz</button>
+            <button class="btn btn-primary" type="button" @click="login">{{ authMode === 'login' ? 'Zaloguj się' : 'Utwórz konto' }}</button>
+          </div>
+        </template>
       </div>
     </div>
 
     <!-- ============ TOASTY / PRZYPOMNIENIA ============ -->
     <div class="toasts">
       <div v-for="t in toasts" :key="t.id" class="toast fade-in">
-        <div class="toast-emoji">{{ t.habit.emoji }}</div>
+        <div class="toast-glyph" :style="{ background: t.habit.color, color: textOn(t.habit.color) }">{{ initialOf(t.habit.name) }}</div>
         <div class="toast-body">
-          <div class="toast-title">⏰ Czas na nawyk!</div>
+          <div class="toast-title">Twoja pora</div>
           <div class="toast-name">{{ t.habit.name }}</div>
         </div>
-        <button class="toast-done" title="Oznacz jako zrobione" @click="completeFromToast(t)">✓</button>
-        <button class="toast-close" title="Zamknij" @click="dismissToast(t.id)">×</button>
+        <button class="toast-done" type="button" title="Oznacz jako zrobione" @click="completeFromToast(t)">Gotowe</button>
+        <button class="toast-close" type="button" title="Zamknij" @click="dismissToast(t.id)">×</button>
       </div>
     </div>
 
     <!-- ============ MOBILE BOTTOM NAV ============ -->
-    <nav class="bottom-nav">
+    <nav class="bottom-nav" aria-label="Nawigacja mobilna">
       <button
         v-for="view in views"
         :key="view.id"
-        class="nav-item"
+        type="button"
+        class="nav-pill"
         :class="{ active: currentView === view.id }"
         @click="currentView = view.id"
       >
-        <span class="nav-icon">{{ view.icon }}</span>
+        <span class="nav-num">{{ view.num }}</span>
         <span>{{ view.label }}</span>
       </button>
     </nav>
   </div>
 
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
-  <script src="app.js"></script>
+  <script src="app.js?v=20261102-warm1"></script>
+  <script type="module" src="bonsai.js?v=20261102-warm1"></script>
+  <script>
+    window.setTimeout(function () {
+      var stage = document.getElementById('bonsai-stage');
+      if (stage && !stage.dataset.started && !stage.dataset.ready && !stage.dataset.error) {
+        stage.dataset.error = '1';
+        stage.classList.add('is-error');
+        var loading = document.getElementById('bonsai-loading');
+        if (loading) loading.hidden = true;
+        var fallback = document.getElementById('bonsai-fallback');
+        if (fallback) fallback.hidden = false;
+      }
+    }, 15000);
+  </script>
 </body>
 </html>

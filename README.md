@@ -573,3 +573,5 @@ docker compose config
 - Interfejs celowo ogranicza emoji i stawia na monogramy, typografię oraz spokojny, motywujący język.
 
 Projekt edukacyjny — przed publikacją dodaj licencję i politykę prywatności.
+
+<!-- Test pracy na branchu i pull requeście. Tego PR nie mergujemy. -->

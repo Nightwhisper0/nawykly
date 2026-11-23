@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html lang="pl">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Nawykly pomaga wracać do małych, codziennych kroków. Pielęgnuj rytm, obserwuj wzrost i rośnij we własnym tempie.">
+  <meta name="description"
+    content="Nawykly pomaga wracać do małych, codziennych kroków. Pielęgnuj rytm, obserwuj wzrost i rośnij we własnym tempie.">
   <title>Nawykly — małe kroki, mocne korzenie</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20261102-warm1">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400..900;1,400..900&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20261103-brand3">
   <script type="importmap">
     {
       "imports": {
@@ -18,6 +21,7 @@
     }
   </script>
 </head>
+
 <body>
   <div id="app" v-cloak>
 
@@ -26,48 +30,35 @@
       <div class="header-inner">
         <button class="brand" type="button" @click="currentView = 'today'" aria-label="Nawykly — strona główna">
           <span class="brand-mark-wrap">
-            <img class="brand-mark" src="assets/brand-mark.svg" alt="" aria-hidden="true" width="44" height="44">
+            <img class="brand-mark" src="assets/brand-flower.svg?v=20261103-brand3" alt="" aria-hidden="true" width="44" height="44">
           </span>
           <span class="brand-word">nawykly<span class="brand-dot">.</span></span>
         </button>
 
         <nav class="main-nav" aria-label="Nawigacja główna">
-          <button
-            v-for="view in views"
-            :key="view.id"
-            type="button"
-            class="nav-pill"
-            :class="{ active: currentView === view.id }"
-            @click="currentView = view.id"
-          >{{ view.label }}</button>
+          <button v-for="view in views" :key="view.id" type="button" class="nav-pill"
+            :class="{ active: currentView === view.id }" @click="currentView = view.id">{{ view.label }}</button>
         </nav>
 
         <div class="header-actions">
-          <button
-            type="button"
-            class="account-btn"
-            @click="openAuth"
-            :aria-label="user ? 'Otwórz swoje konto' : 'Zaloguj się'"
-          >
+          <button type="button" class="account-btn" @click="openAuth"
+            :aria-label="user ? 'Otwórz swoje konto' : 'Zaloguj się'">
             <span v-if="user" class="account-avatar">{{ userInitials }}</span>
             <span class="account-btn-label">{{ user ? user.name : 'Zaloguj się' }}</span>
             <svg v-if="!user" class="account-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <circle cx="12" cy="8" r="3.4" stroke="currentColor" stroke-width="1.7"/>
-              <path d="M5.5 19.2c.8-3 3.2-4.6 6.5-4.6s5.7 1.6 6.5 4.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+              <circle cx="12" cy="8" r="3.4" stroke="currentColor" stroke-width="1.7" />
+              <path d="M5.5 19.2c.8-3 3.2-4.6 6.5-4.6s5.7 1.6 6.5 4.6" stroke="currentColor" stroke-width="1.7"
+                stroke-linecap="round" />
             </svg>
           </button>
 
-          <button
-            type="button"
-            class="bell"
-            :class="{ on: notificationsEnabled }"
-            @click="toggleNotifications"
+          <button type="button" class="bell" :class="{ on: notificationsEnabled }" @click="toggleNotifications"
             :title="notificationsEnabled ? 'Wyłącz przypomnienia' : 'Włącz przypomnienia z dźwiękiem'"
-            aria-label="Przypomnienia"
-          >
+            aria-label="Przypomnienia">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M18 8.4a6 6 0 1 0-12 0c0 4.6-2 5.9-2 5.9h16s-2-1.3-2-5.9Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M10.2 19a2 2 0 0 0 3.6 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+              <path d="M18 8.4a6 6 0 1 0-12 0c0 4.6-2 5.9-2 5.9h16s-2-1.3-2-5.9Z" stroke="currentColor"
+                stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M10.2 19a2 2 0 0 0 3.6 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
             </svg>
           </button>
         </div>
@@ -80,8 +71,9 @@
       <div v-if="notificationsSupported && !notificationsEnabled" class="notify-banner">
         <div class="notify-banner-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none">
-            <path d="M18 8.4a6 6 0 1 0-12 0c0 4.6-2 5.9-2 5.9h16s-2-1.3-2-5.9Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M10.2 19a2 2 0 0 0 3.6 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+            <path d="M18 8.4a6 6 0 1 0-12 0c0 4.6-2 5.9-2 5.9h16s-2-1.3-2-5.9Z" stroke="currentColor" stroke-width="1.7"
+              stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M10.2 19a2 2 0 0 0 3.6 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
           </svg>
         </div>
         <div class="notify-banner-copy">
@@ -105,27 +97,24 @@
               <span class="hero-kicker">Bonsai / 3D</span>
             </div>
             <h1>{{ greeting }}.<br><em>Małe kroki.<br>Mocne korzenie.</em></h1>
-            <p class="hero-sub">Pielęgnuj swój rytm dzień po dniu. Bonsai rośnie powoli — Ty też możesz. Zatrzymaj się, obróć model i przypomnij sobie, po co to robisz.</p>
+            <p class="hero-sub">Pielęgnuj swój rytm dzień po dniu. Bonsai rośnie powoli - Ty też możesz. Zatrzymaj się,
+              obróć model i przypomnij sobie, po co to robisz.</p>
             <div class="hero-actions">
-              <button class="btn btn-light" type="button" @click="currentView = 'habits'; openNewHabit()">Zaplanuj nowy krok</button>
+              <button class="btn btn-light" type="button" @click="currentView = 'habits'; openNewHabit()">Zaplanuj nowy
+                krok</button>
               <span class="hero-today">{{ completedTodayCount }} z {{ todayHabits.length }} gotowe dziś</span>
             </div>
           </div>
 
           <div class="hero-stage-wrap">
-            <div
-              class="bonsai-stage"
-              id="bonsai-stage"
-              tabindex="0"
-              role="region"
-              aria-label="Interaktywny model bonsai 3D. Przeciągnij, aby obrócić. Użyj kółka myszy lub gestu szczypania, aby przybliżyć. Strzałki obracają model, a spacja zatrzymuje lub wznawia obrót."
-            >
+            <div class="bonsai-stage" id="bonsai-stage" tabindex="0" role="region"
+              aria-label="Interaktywny model bonsai 3D. Przeciągnij, aby obrócić. Użyj kółka myszy lub gestu szczypania, aby przybliżyć. Strzałki obracają model, a spacja zatrzymuje lub wznawia obrót.">
               <div class="bonsai-canvas-host" id="bonsai-canvas-host" aria-hidden="true"></div>
-              <img class="bonsai-watermark" src="assets/brand-mark.svg" alt="" aria-hidden="true">
+              <img class="bonsai-watermark" src="assets/brand-flower.svg?v=20261103-brand3" alt="" aria-hidden="true">
               <span class="bonsai-stage-tag">Bonsai · 3D</span>
 
               <div class="bonsai-loading" id="bonsai-loading" aria-live="polite">
-                <img class="bonsai-loading-mark" src="assets/brand-mark.svg" alt="" aria-hidden="true">
+                <img class="bonsai-loading-mark" src="assets/brand-flower.svg?v=20261103-brand3" alt="" aria-hidden="true">
                 <span class="bonsai-loading-text" id="bonsai-progress">Układamy bonsai…</span>
                 <div class="bonsai-progress-track" aria-hidden="true">
                   <span id="bonsai-progress-bar"></span>
@@ -133,7 +122,7 @@
               </div>
 
               <div class="bonsai-fallback" id="bonsai-fallback" hidden>
-                <img src="assets/brand-mark.svg" alt="" aria-hidden="true">
+                <img src="assets/brand-flower.svg?v=20261103-brand3" alt="" aria-hidden="true">
                 <strong>Bonsai odpoczywa.</strong>
                 <p>Model 3D potrzebuje WebGL. Możesz dalej korzystać z aplikacji.</p>
                 <button type="button" class="bonsai-retry" onclick="window.location.reload()">Spróbuj ponownie</button>
@@ -166,14 +155,10 @@
         </div>
 
         <div v-if="todayHabits.length" class="habit-list">
-          <article
-            v-for="h in todayHabits"
-            :key="h.id"
-            class="habit-card"
-            :class="{ done: isDoneToday(h) }"
-            :style="{ '--habit-color': h.color }"
-          >
-            <div class="habit-glyph" :style="{ background: h.color, color: textOn(h.color) }">{{ initialOf(h.name) }}</div>
+          <article v-for="h in todayHabits" :key="h.id" class="habit-card" :class="{ done: isDoneToday(h) }"
+            :style="{ '--habit-color': h.color }">
+            <div class="habit-glyph" :style="{ background: h.color, color: textOn(h.color) }">{{ initialOf(h.name) }}
+            </div>
             <div class="habit-main">
               <h3 class="habit-name">{{ h.name }}</h3>
               <div class="habit-meta">
@@ -191,15 +176,11 @@
         <div v-else class="empty-state">
           <div class="empty-mark" aria-hidden="true">—</div>
           <p>Dziś nie masz zaplanowanych nawyków. To dobry moment, żeby dodać coś małego.</p>
-          <button class="btn btn-dark" type="button" @click="currentView = 'habits'; openNewHabit()">Zaplanuj nawyk</button>
+          <button class="btn btn-dark" type="button" @click="currentView = 'habits'; openNewHabit()">Zaplanuj
+            nawyk</button>
         </div>
 
-        <div
-          v-if="isTodayComplete"
-          class="all-done-banner"
-          role="status"
-          aria-live="polite"
-        >
+        <div v-if="isTodayComplete" class="all-done-banner" role="status" aria-live="polite">
           <span class="done-check" aria-hidden="true">✓</span>
           <div class="all-done-copy">
             <strong>Gratulacje, każdego dnia o krok bliżej</strong>
@@ -223,18 +204,15 @@
 
         <div class="title-block">
           <h1 class="page-title">Twoje nawyki<span class="dot">.</span></h1>
-          <p class="page-lede">Ustal rytm, godziny przypomnień i dni tygodnia. Regularność jest ważniejsza niż intensywność.</p>
+          <p class="page-lede">Ustal rytm, godziny przypomnień i dni tygodnia. Regularność jest ważniejsza niż
+            intensywność.</p>
         </div>
 
         <div v-if="habits.length" class="manage-list">
-          <article
-            v-for="h in habits"
-            :key="h.id"
-            class="manage-card"
-            :class="{ inactive: h.archived }"
-            :style="{ '--habit-color': h.color }"
-          >
-            <div class="habit-glyph" :style="{ background: h.color, color: textOn(h.color) }">{{ initialOf(h.name) }}</div>
+          <article v-for="h in habits" :key="h.id" class="manage-card" :class="{ inactive: h.archived }"
+            :style="{ '--habit-color': h.color }">
+            <div class="habit-glyph" :style="{ background: h.color, color: textOn(h.color) }">{{ initialOf(h.name) }}
+            </div>
             <div class="habit-main">
               <h3 class="habit-name">{{ h.name }}</h3>
               <div class="habit-meta">
@@ -247,21 +225,20 @@
             <div class="manage-actions">
               <button type="button" class="action-btn" title="Edytuj nawyk" @click="openEdit(h)">
                 <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M4 20h4.2L19 9.2 14.8 5 4 15.8V20Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
-                  <path d="M13.2 6.6l4.2 4.2" stroke="currentColor" stroke-width="1.7"/>
+                  <path d="M4 20h4.2L19 9.2 14.8 5 4 15.8V20Z" stroke="currentColor" stroke-width="1.7"
+                    stroke-linejoin="round" />
+                  <path d="M13.2 6.6l4.2 4.2" stroke="currentColor" stroke-width="1.7" />
                 </svg>
               </button>
-              <button
-                type="button"
-                class="action-btn"
-                :class="{ armed: deleteArmed === h.id }"
+              <button type="button" class="action-btn" :class="{ armed: deleteArmed === h.id }"
                 :title="deleteArmed === h.id ? 'Kliknij ponownie, aby usunąć' : 'Usuń nawyk'"
-                @click="confirmDelete(h.id)"
-              >
+                @click="confirmDelete(h.id)">
                 <template v-if="deleteArmed === h.id">Usuń?</template>
                 <svg v-else viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M4.5 7h15M9.5 7V4.8h5V7M7 7l1 12.2h8L17 7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M10.2 10.5v5.5M13.8 10.5v5.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+                  <path d="M4.5 7h15M9.5 7V4.8h5V7M7 7l1 12.2h8L17 7" stroke="currentColor" stroke-width="1.7"
+                    stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M10.2 10.5v5.5M13.8 10.5v5.5" stroke="currentColor" stroke-width="1.7"
+                    stroke-linecap="round" />
                 </svg>
               </button>
             </div>
@@ -284,7 +261,8 @@
 
         <div class="title-block">
           <h1 class="page-title">Twoje postępy<span class="dot">.</span></h1>
-          <p class="page-lede">Zobacz, jak wygląda Twoja regularność. Bez oceniania — tylko informacja, co działa i co warto wzmocnić.</p>
+          <p class="page-lede">Zobacz, jak wygląda Twoja regularność. Bez oceniania — tylko informacja, co działa i co
+            warto wzmocnić.</p>
         </div>
 
         <div class="stats-grid">
@@ -332,17 +310,13 @@
           <div class="panel-head">
             <div>
               <h3>Mapa regularności</h3>
-              <p class="panel-sub">Każdy kwadrat to jeden dzień. Kolor pokazuje, jak często udawało się wrócić do planu.</p>
+              <p class="panel-sub">Każdy kwadrat to jeden dzień. Kolor pokazuje, jak często udawało się wrócić do planu.
+              </p>
             </div>
           </div>
           <div class="heatmap">
-            <div
-              v-for="d in heatmapDays"
-              :key="d.key"
-              class="heat-cell"
-              :class="levelClass(d.count)"
-              :title="heatTitle(d)"
-            ></div>
+            <div v-for="d in heatmapDays" :key="d.key" class="heat-cell" :class="levelClass(d.count)"
+              :title="heatTitle(d)"></div>
           </div>
           <div class="heatmap-legend">
             <span>mniej</span>
@@ -364,7 +338,8 @@
 
         <div class="title-block">
           <h1 class="page-title">Ludzie, którzy idą z Tobą<span class="dot">.</span></h1>
-          <p class="page-lede">Porównujcie regularność, a nie perfekcję. Czasem wystarczy, że ktoś pyta: „jak dziś?” — i od razu łatwiej wrócić do planu.</p>
+          <p class="page-lede">Porównujcie regularność, a nie perfekcję. Czasem wystarczy, że ktoś pyta: „jak dziś?” — i
+            od razu łatwiej wrócić do planu.</p>
         </div>
 
         <div class="stats-grid">
@@ -399,12 +374,7 @@
           </div>
 
           <div class="friend-board">
-            <div
-              v-for="friend in friendBoard"
-              :key="friend.id"
-              class="friend-row"
-              :class="{ me: friend.isMe }"
-            >
+            <div v-for="friend in friendBoard" :key="friend.id" class="friend-row" :class="{ me: friend.isMe }">
               <span class="friend-rank">{{ friend.rank }}</span>
               <div class="friend-avatar" :style="{ background: friend.color, color: textOn(friend.color) }">
                 {{ friendInitials(friend.name) }}
@@ -429,13 +399,8 @@
                 <span>seria</span>
                 <strong>{{ streakLabel(friend.streak) }}</strong>
               </div>
-              <button
-                v-if="!friend.isMe"
-                type="button"
-                class="friend-challenge"
-                :class="{ sent: friend.challenged }"
-                @click="challengeFriend(friend)"
-              >{{ friend.challenged ? 'Wysłane' : 'Wyzwij' }}</button>
+              <button v-if="!friend.isMe" type="button" class="friend-challenge" :class="{ sent: friend.challenged }"
+                @click="challengeFriend(friend)">{{ friend.challenged ? 'Wysłane' : 'Wyzwij' }}</button>
               <span v-else class="friend-self">To Ty</span>
             </div>
           </div>
@@ -454,11 +419,13 @@
             <div class="friend-form">
               <div class="form-group">
                 <label for="friend-name">Imię lub pseudonim</label>
-                <input id="friend-name" v-model="newFriendName" maxlength="40" placeholder="np. Marta" @keyup.enter="addFriend">
+                <input id="friend-name" v-model="newFriendName" maxlength="40" placeholder="np. Marta"
+                  @keyup.enter="addFriend">
               </div>
               <div class="form-group">
                 <label for="friend-handle">Nazwa (opcjonalnie)</label>
-                <input id="friend-handle" v-model="newFriendHandle" maxlength="30" placeholder="@marta" @keyup.enter="addFriend">
+                <input id="friend-handle" v-model="newFriendHandle" maxlength="30" placeholder="@marta"
+                  @keyup.enter="addFriend">
               </div>
               <button class="btn btn-primary" type="button" @click="addFriend">Dodaj do kręgu</button>
             </div>
@@ -469,7 +436,8 @@
           <div class="panel friends-tip">
             <span class="tag">Dobra praktyka</span>
             <h3>Rywalizujcie lekko.</h3>
-            <p>Porównujcie regularność, nie perfekcję. Jednego dnia możesz być wyżej, innego niżej. Liczy się to, że wracacie.</p>
+            <p>Porównujcie regularność, nie perfekcję. Jednego dnia możesz być wyżej, innego niżej. Liczy się to, że
+              wracacie.</p>
             <p class="friends-tip-note">Dobra rozmowa zaczyna się od „jak dziś?” — nie od „dlaczego nie więcej?”.</p>
           </div>
         </div>
@@ -487,25 +455,16 @@
         <span style="background:#211D17"></span>
       </div>
       <div class="footer-inner">
-        <span class="footer-brand"><img src="assets/brand-mark.svg" alt="" aria-hidden="true">nawykly.</span>
+        <span class="footer-brand"><img src="assets/brand-flower.svg?v=20261103-brand3" alt="" aria-hidden="true">nawykly.</span>
         <span class="footer-note">Projekt prototypowy · dane zostają na Twoim urządzeniu</span>
         <span class="footer-note">© 2026</span>
       </div>
     </footer>
 
     <!-- ============ PRZYCIEMNIENIE + KONFETTI ============ -->
-    <div
-      class="celebration-dim"
-      :class="{ active: confettiPieces.length > 0 }"
-      aria-hidden="true"
-    ></div>
+    <div class="celebration-dim" :class="{ active: confettiPieces.length > 0 }" aria-hidden="true"></div>
     <div v-if="confettiPieces.length" class="confetti-layer" aria-hidden="true">
-      <span
-        v-for="piece in confettiPieces"
-        :key="piece.id"
-        class="confetti-piece"
-        :style="piece.style"
-      ></span>
+      <span v-for="piece in confettiPieces" :key="piece.id" class="confetti-piece" :style="piece.style"></span>
     </div>
 
     <!-- ============ MODAL: DODAJ / EDYTUJ NAWYK ============ -->
@@ -519,29 +478,16 @@
 
         <div class="form-group">
           <label for="habit-name">Co chcesz robić regularnie?</label>
-          <input
-            id="habit-name"
-            v-model="form.name"
-            maxlength="60"
-            placeholder="np. 10 minut czytania"
-            @keyup.enter="saveHabit"
-          >
+          <input id="habit-name" v-model="form.name" maxlength="60" placeholder="np. 10 minut czytania"
+            @keyup.enter="saveHabit">
         </div>
 
         <div class="form-row">
           <div class="form-group">
             <label>Kolor</label>
             <div class="color-swatches">
-              <button
-                v-for="c in colors"
-                :key="c"
-                type="button"
-                class="swatch"
-                :class="{ active: form.color === c }"
-                :style="{ background: c }"
-                :aria-label="'Wybierz kolor ' + c"
-                @click="form.color = c"
-              ></button>
+              <button v-for="c in colors" :key="c" type="button" class="swatch" :class="{ active: form.color === c }"
+                :style="{ background: c }" :aria-label="'Wybierz kolor ' + c" @click="form.color = c"></button>
             </div>
           </div>
           <div class="form-group">
@@ -553,14 +499,8 @@
         <div class="form-group">
           <label>Kiedy?</label>
           <div class="day-chips">
-            <button
-              v-for="d in DAY_ORDER"
-              :key="d"
-              type="button"
-              class="day-chip"
-              :class="{ active: form.days.includes(d) }"
-              @click="toggleDay(d)"
-            >{{ DAY_SHORT[d] }}</button>
+            <button v-for="d in DAY_ORDER" :key="d" type="button" class="day-chip"
+              :class="{ active: form.days.includes(d) }" @click="toggleDay(d)">{{ DAY_SHORT[d] }}</button>
           </div>
           <p class="form-hint">Bez wyboru oznacza codziennie. Możesz to zmienić w każdej chwili.</p>
         </div>
@@ -600,16 +540,10 @@
 
         <template v-else>
           <div class="auth-switch" role="tablist" aria-label="Logowanie lub nowe konto">
-            <button
-              type="button"
-              :class="{ active: authMode === 'login' }"
-              @click="authMode = 'login'; authError = ''"
-            >Zaloguj się</button>
-            <button
-              type="button"
-              :class="{ active: authMode === 'register' }"
-              @click="authMode = 'register'; authError = ''"
-            >Nowe konto</button>
+            <button type="button" :class="{ active: authMode === 'login' }"
+              @click="authMode = 'login'; authError = ''">Zaloguj się</button>
+            <button type="button" :class="{ active: authMode === 'register' }"
+              @click="authMode = 'register'; authError = ''">Nowe konto</button>
           </div>
 
           <div class="form-group">
@@ -622,11 +556,13 @@
           </div>
           <div class="form-group">
             <label for="auth-password">Hasło</label>
-            <input id="auth-password" type="password" v-model="authForm.password" maxlength="80" placeholder="Minimum 4 znaki" @keyup.enter="login">
+            <input id="auth-password" type="password" v-model="authForm.password" maxlength="80"
+              placeholder="Minimum 4 znaki" @keyup.enter="login">
           </div>
 
           <p v-if="authError" class="form-error" role="alert">{{ authError }}</p>
-          <p class="form-hint">To prototyp: konto zostaje w tej przeglądarce. Nie wysyłamy e-maili ani nie przechowujemy haseł w chmurze.</p>
+          <p class="form-hint">To prototyp: konto zostaje w tej przeglądarce. Nie wysyłamy e-maili ani nie przechowujemy
+            haseł w chmurze.</p>
 
           <div class="modal-actions">
             <button class="btn btn-ghost" type="button" @click="closeAuth">Nie teraz</button>
@@ -639,26 +575,22 @@
     <!-- ============ TOASTY / PRZYPOMNIENIA ============ -->
     <div class="toasts">
       <div v-for="t in toasts" :key="t.id" class="toast fade-in">
-        <div class="toast-glyph" :style="{ background: t.habit.color, color: textOn(t.habit.color) }">{{ initialOf(t.habit.name) }}</div>
+        <div class="toast-glyph" :style="{ background: t.habit.color, color: textOn(t.habit.color) }">{{
+          initialOf(t.habit.name) }}</div>
         <div class="toast-body">
           <div class="toast-title">Twoja pora</div>
           <div class="toast-name">{{ t.habit.name }}</div>
         </div>
-        <button class="toast-done" type="button" title="Oznacz jako zrobione" @click="completeFromToast(t)">Gotowe</button>
+        <button class="toast-done" type="button" title="Oznacz jako zrobione"
+          @click="completeFromToast(t)">Gotowe</button>
         <button class="toast-close" type="button" title="Zamknij" @click="dismissToast(t.id)">×</button>
       </div>
     </div>
 
     <!-- ============ MOBILE BOTTOM NAV ============ -->
     <nav class="bottom-nav" aria-label="Nawigacja mobilna">
-      <button
-        v-for="view in views"
-        :key="view.id"
-        type="button"
-        class="nav-pill"
-        :class="{ active: currentView === view.id }"
-        @click="currentView = view.id"
-      >
+      <button v-for="view in views" :key="view.id" type="button" class="nav-pill"
+        :class="{ active: currentView === view.id }" @click="currentView = view.id">
         <span class="nav-num">{{ view.num }}</span>
         <span>{{ view.label }}</span>
       </button>
@@ -666,8 +598,8 @@
   </div>
 
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
-  <script src="app.js?v=20261102-warm1"></script>
-  <script type="module" src="bonsai.js?v=20261102-warm1"></script>
+  <script src="app.js?v=20261103-brand3"></script>
+  <script type="module" src="bonsai.js?v=20261103-brand3"></script>
   <script>
     window.setTimeout(function () {
       var stage = document.getElementById('bonsai-stage');
@@ -682,4 +614,5 @@
     }, 15000);
   </script>
 </body>
+
 </html>
